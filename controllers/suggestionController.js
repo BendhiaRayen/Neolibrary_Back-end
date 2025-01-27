@@ -1,9 +1,13 @@
 const Suggestion = require("../models/Suggestion");
 const mongoose = require("mongoose");
+
 // Add a new suggestion
 exports.addSuggestion = async (req, res) => {
   try {
-    const { title, description, author } = req.body;
+    const { title, description } = req.body;
+
+    // Extract the author from the authenticated user's token (req.user)
+    const author = req.user._id; // Assuming `req.user` contains the authenticated user's details
 
     // Create a new suggestion
     const suggestion = new Suggestion({ title, description, author });
@@ -20,6 +24,7 @@ exports.addSuggestion = async (req, res) => {
 // Get all suggestions
 exports.getSuggestions = async (req, res) => {
   try {
+    // Populate the `author` field with the author's name
     const suggestions = await Suggestion.find().populate("author", "name");
     res.status(200).json(suggestions);
   } catch (err) {
@@ -28,7 +33,6 @@ exports.getSuggestions = async (req, res) => {
 };
 
 // Delete a suggestion
-
 exports.deleteSuggestion = async (req, res) => {
   try {
     // Validate the ObjectId
@@ -44,6 +48,62 @@ exports.deleteSuggestion = async (req, res) => {
     }
 
     res.status(200).json({ message: "Suggestion deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+exports.upvoteSuggestion = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Validate the suggestion ID
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid suggestion ID" });
+    }
+
+    // Find and update the suggestion
+    const suggestion = await Suggestion.findByIdAndUpdate(
+      id,
+      { $inc: { votes: 1 } },
+      { new: true }
+    );
+
+    if (!suggestion) {
+      return res.status(404).json({ message: "Suggestion not found" });
+    }
+
+    res
+      .status(200)
+      .json({ message: "Suggestion upvoted successfully", suggestion });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Downvote a suggestion
+exports.downvoteSuggestion = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Validate the suggestion ID
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid suggestion ID" });
+    }
+
+    // Find and update the suggestion
+    const suggestion = await Suggestion.findByIdAndUpdate(
+      id,
+      { $inc: { votes: -1 } },
+      { new: true }
+    );
+
+    if (!suggestion) {
+      return res.status(404).json({ message: "Suggestion not found" });
+    }
+
+    res
+      .status(200)
+      .json({ message: "Suggestion downvoted successfully", suggestion });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

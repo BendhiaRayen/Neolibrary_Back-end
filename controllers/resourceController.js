@@ -1,9 +1,13 @@
 const Resource = require("../models/Resource");
 const mongoose = require("mongoose");
+
 // Add a new resource
 exports.addResource = async (req, res) => {
   try {
-    const { title, description, category, contributor, link } = req.body;
+    const { title, description, category, link } = req.body;
+
+    // Extract contributor from the authenticated user's token (req.user)
+    const contributor = req.user.name; // Assuming 'name' is in the user object
 
     // Create a new resource
     const resource = new Resource({
@@ -46,6 +50,8 @@ exports.deleteResource = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+// Get resources by category
 exports.getResourcesByCategory = async (req, res) => {
   try {
     const { categoryName } = req.params;

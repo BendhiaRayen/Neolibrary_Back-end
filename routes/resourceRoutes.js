@@ -10,7 +10,7 @@ const { protect, restrictTo } = require("../controllers/authController");
 const router = express.Router();
 
 // Add a resource
-router.post("/", protect, restrictTo("admin"), addResource);
+router.post("/", protect, addResource);
 
 // Get all resources
 router.get("/", protect, getResources);

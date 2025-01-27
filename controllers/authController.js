@@ -152,9 +152,7 @@ exports.forgotPassword = async (req, res) => {
     await user.save({ validateBeforeSave: false }); // Save without validating other fields
 
     // Create a password reset URL
-    const resetURL = `${req.protocol}://${req.get(
-      "host"
-    )}/api/auth/reset-password/${resetToken}`;
+    const resetURL = `http://localhost:5173/reset-password/${resetToken}`;
 
     // Set up nodemailer
     const transporter = nodemailer.createTransport({
